@@ -11,11 +11,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure--hwc2a(x^c0o%-t105#h1dhv1#b$xgg^2uwj=-jc(%@$x%(=b%"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
+ENV = os.environ.get('DJANGO_ENV', 'dev')
+if ENV == 'dev':
+    DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = []
-
-AUTH_USER_MODEL = 'shortener.Users'
 
 # Application definition
 LOGIN_URL='/users/login'
@@ -77,8 +80,16 @@ WSGI_APPLICATION = "shrinkers.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "app_db",
+        "USER" : "root",
+        "PASSWORD" : "wjdsldb27985!",
+        "HOST" : "34.64.203.205",
+        "POSRT" : 3306,
+        "OPTIONS": {
+            "autocommit" : True,
+            "charset" : "utf8mb4"
+        }
     }
 }
 
