@@ -9,7 +9,7 @@ class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        abstract = True
+        abstract = True 
 
 class PayPlan(TimeStampedModel):
     name = models.CharField(max_length=20)
@@ -28,7 +28,8 @@ class Organization(TimeStampedModel):
 
 class Users(models.Model):
     user = models.OneToOneField(U, on_delete=models.CASCADE)
-    payplan = models.OneToOneField(PayPlan, on_delete=models.DO_NOTHING, null=True)
+    full_name = models.CharField(max_length=100, null=True)
+    url_count = models.IntegerField(default=0)
     organization = models.ForeignKey(Organization, on_delete=models.DO_NOTHING, null=True)
  
 class EmailVerification(TimeStampedModel):
@@ -49,12 +50,17 @@ class ShortenedUrls(TimeStampedModel):
     def rand_string():
         str_pool = string.digits + string.ascii_letters
         return ("".join([random.choice(str_pool) for _ in range(6)])).lower()
+    
+    def rand_letter():
+        str_pool = string.ascii_letters
+        return random.choice(str_pool).lower()
+
         
     nick_name = models.CharField(max_length=100)
     category = models.ForeignKey(Categories, on_delete=models.DO_NOTHING, null=True)
     prefix = models.CharField(max_length=50)
     creator = models.ForeignKey(Users, on_delete=models.CASCADE)
     target_url = models.CharField(max_length=2000)
-    shortened_url = models.CharField(max_length=6, default=rand_string)
+    shortened_url = models.CharField(max_length=6, default=rand_letter)
     created_via = models.CharField(max_length=8, choices=UrlCreatedVia.choices, default=UrlCreatedVia.WEBSITE)
     expired_at = models.DateTimeField(null=True)

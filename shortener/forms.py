@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 from django import forms
+from shortener.utils import url_count_changer
 from django.contrib.auth.forms import UserCreationForm
 from shortener.models import Users, ShortenedUrls
 from django.utils.translation import gettext_lazy as _
@@ -51,10 +52,15 @@ class UrlCreateForm(forms.ModelForm):
 
     def save(self, request, commit=True):
         instance = super(UrlCreateForm, self).save(commit=False)
-        instance.created_by_id = request.user.id
+        instance.creator_id = request.user.id
         instance.target_url = instance.target_url.strip()
         if commit:
-            instance.save()
+            try:
+                instance.save()
+            except Exception as e:
+                print(e)
+            else:
+                url_count_changer(request, True)
         return instance
 
     def update_form(self, request, url_id):
