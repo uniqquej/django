@@ -3,13 +3,19 @@ import string
 from django.db import models
 from django.contrib.auth.models import User as U
 # Create your models here.
-class PayPlan(models.Model):
-    name = models.CharField(max_length=20)
-    price = models.IntegerField()
+
+class TimeStampedModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        abstract = True
 
-class Organization(models.Model):
+class PayPlan(TimeStampedModel):
+    name = models.CharField(max_length=20)
+    price = models.IntegerField()
+    
+class Organization(TimeStampedModel):
     class Industries(models.TextChoices):
         PERSONAL = 'personal'
         RETAIL = 'retail'
@@ -19,29 +25,23 @@ class Organization(models.Model):
     name = models.CharField(max_length=50)
     indusrty = models.CharField(max_length=15, choices=Industries.choices, default=Industries.OTHERS)
     pay_plan = models.ForeignKey(PayPlan, on_delete=models.DO_NOTHING, null=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 class Users(models.Model):
     user = models.OneToOneField(U, on_delete=models.CASCADE)
     payplan = models.OneToOneField(PayPlan, on_delete=models.DO_NOTHING, null=True)
     organization = models.ForeignKey(Organization, on_delete=models.DO_NOTHING, null=True)
  
-class EmailVerification(models.Model):
+class EmailVerification(TimeStampedModel):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     key = models.CharField(max_length=100, null=True)
     verified = models.BooleanField(default=False)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
-class Categories(models.Model):
+class Categories(TimeStampedModel):
     name = models.CharField(max_length=100)
     organization = models.ForeignKey(Organization, on_delete=models.DO_NOTHING, null=True)
     creator = models.ForeignKey(Users, on_delete=models.CASCADE)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-class ShortenedUrls(models.Model):
+   
+class ShortenedUrls(TimeStampedModel):
     class UrlCreatedVia(models.TextChoices):
         WEBSITE='web'
         TELEGRAM='telegram'
@@ -58,5 +58,3 @@ class ShortenedUrls(models.Model):
     shortened_url = models.CharField(max_length=6, default=rand_string)
     created_via = models.CharField(max_length=8, choices=UrlCreatedVia.choices, default=UrlCreatedVia.WEBSITE)
     expired_at = models.DateTimeField(null=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
