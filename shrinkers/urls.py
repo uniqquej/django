@@ -8,5 +8,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("__debug__/", include(debug_toolbar.urls)),  # Django Debug Tool
     path('urls/', include('shortener.urls.urls')),
+    path('index/', include('shortener.index.urls')),
     path('<str:prefix>/<str:url>',url_redirect )
 ]

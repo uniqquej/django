@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # install
     "debug_toolbar",
     "django_seed",
+    "django_user_agents",
     
     # apps
     "shortener"
@@ -48,11 +49,15 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    
+    "django_user_agents.middleware.UserAgentMiddleware"
 ]
 
 INTERNAL_IPS=[
     '127.0.0.1',
 ]
+
+GEOIP_PATH = os.path.join(BASE_DIR, 'geolite2')
 
 ROOT_URLCONF = "shrinkers.urls"
 
