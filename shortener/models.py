@@ -1,9 +1,10 @@
 import string
 import random
+from typing import Dict
 
 from django.db import models
 from django.contrib.auth.models import User as U
-from django.contrib.gis.geoip2 import GeoIP2
+from shortener.model_utils import dict_filter, dict_slice, location_finder
 
 # Create your models here.
 
@@ -70,8 +71,8 @@ class ShortenedUrls(TimeStampedModel):
     category = models.ForeignKey(Categories, on_delete=models.DO_NOTHING, null=True)
     prefix = models.CharField(max_length=50, default=rand_letter)
     creator = models.ForeignKey(Users, on_delete=models.CASCADE)
-    click = models.BigIntegerField(default=0)
     target_url = models.CharField(max_length=2000)
+    click = models.BigIntegerField(default=0)
     shortened_url = models.CharField(max_length=6, default=rand_string)
     create_via = models.CharField(max_length=8, choices=UrlCreatedVia.choices, default=UrlCreatedVia.WEBSITE)
     expired_at = models.DateTimeField(null=True)
@@ -85,37 +86,57 @@ class ShortenedUrls(TimeStampedModel):
                 ]
             ),
         ]
-    
+
     def clicked(self):
         self.click += 1
         self.save()
 
-class Statics(TimeStampedModel):
+
+class Statistic(TimeStampedModel):
     class ApproachDevice(models.TextChoices):
-        PC = 'pc'
-        MOBILE = 'mobile'
-        TABLET = 'tablet'
-    
+        PC = "pc"
+        MOBILE = "mobile"
+        TABLET = "tablet"
+
     shortened_url = models.ForeignKey(ShortenedUrls, on_delete=models.CASCADE)
     ip = models.CharField(max_length=15)
-    web_browser = models.CharField(max_length=15)
+    web_browser = models.CharField(max_length=50)
     device = models.CharField(max_length=6, choices=ApproachDevice.choices)
     device_os = models.CharField(max_length=30)
-    country_code = models.CharField(max_length=2, default='XX')
-    country_name = models.CharField(max_length=100, default='UNKNOWN')
+    country_code = models.CharField(max_length=2, default="XX")
+    country_name = models.CharField(max_length=100, default="UNKNOWN")
+    custom_params = models.JSONField(null=True)
 
-    def record(self, request, url:ShortenedUrls):
+    def record(self, request, url: ShortenedUrls, params: Dict):
         self.shortened_url = url
-        self.ip = request.META['REMOTE_ADDR'] #로컬에서만 적용 / 서버에서 이렇게 설정하면 로드밸런서 ip 가져옴
+        self.ip = request.META["REMOTE_ADDR"]
         self.web_browser = request.user_agent.browser.family
-        self.device = self.ApproachDevice.MOBILE if request.user_agent.is_mobile else self.ApproachDevice.TABLET if request.user_agent.is_tablet  else self.ApproachDevice.PC
+        self.device = (
+            self.ApproachDevice.MOBILE
+            if request.user_agent.is_mobile
+            else self.ApproachDevice.TABLET
+            if request.user_agent.is_tablet
+            else self.ApproachDevice.PC
+        )
         self.device_os = request.user_agent.os.family
+        t = TrackingParams.get_tracking_params(url.id)
+        self.custom_params = dict_slice(dict_filter(params, t), 5)
+
         try:
-            country = GeoIP2().country(self.ip)
-            self.country_code = country.get('country_code','XX')
-            self.country_name = country.get('country_name','UNKNOWN')
+            country = location_finder(request)
+            self.country_code = country.get("country_code", "XX")
+            self.country_name = country.get("country_name", "UNKNOWN")
         except:
             pass
-        
+
         url.clicked()
         self.save()
+
+
+class TrackingParams(TimeStampedModel):
+    shortened_url = models.ForeignKey(ShortenedUrls, on_delete=models.CASCADE)
+    params = models.CharField(max_length=20)
+    
+    @classmethod
+    def get_tracking_params(cls, shortened_url_id:int):
+        return TrackingParams.objects.filter(shortened_url_id=shortened_url_id).values_list("params", flat=True)
