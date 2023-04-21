@@ -20,7 +20,7 @@ class UrlListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ShortenedUrls
-        fields = ['id','nick_name','prefix','shortened_url','creator','click','create_via','expired_at']
+        fields = '__all__'
 
 class UrlCreateSerializer(serializers.Serializer):
     nick_name = serializers.CharField(max_length=50)
@@ -30,6 +30,7 @@ class UrlCreateSerializer(serializers.Serializer):
     def create(self, request, data, commit=True):
         instance = ShortenedUrls()
         instance.creator_id = request.user.id
+        instance.nick_name = data.get('nick_name',None)
         instance.category = data.get('category',None)
         instance.target_url = data.get('target_url').strip()
         
