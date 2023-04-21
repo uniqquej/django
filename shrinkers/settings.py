@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "django_seed",
     "django_user_agents",
     "rest_framework",
+    "drf_yasg",
     
     # apps
     "shortener"
@@ -59,9 +60,9 @@ MIDDLEWARE = [
     "django_user_agents.middleware.UserAgentMiddleware"
 ]
 
-INTERNAL_IPS=[
-    '127.0.0.1',
-]
+# INTERNAL_IPS=[
+#     '127.0.0.1',
+# ]
 
 GEOIP_PATH = os.path.join(BASE_DIR, 'geolite2')
 
