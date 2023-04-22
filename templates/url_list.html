@@ -59,6 +59,12 @@
     </div>
   </div>
 </div>
+<div id="vue_div">
+  <span>Hello Times : [[howManyTimes]] </span>
+  <a class="btn btn-sm btn-primary text-white" @click="howManyTimes += 1">Say Hello</a>
+  <a class="btn btn-sm btn-primary text-white" @click="howManyTimes -= 1">Say Bye</a>
+  <a class="btn btn-sm btn-primary text-white" @click="howManyTimes = 0">Reset Hello</a>
+</div>
 {% if messages %}
     {% for message in messages %}
     <div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
@@ -80,4 +86,16 @@
       $('.toast').toast('show');
     </script>
 {% endif %}
+
+{% comment %} vuejs 사용하기 {% endcomment %}
+<script>
+  let vue = new Vue({
+    delimiters: ["[[","]]"],
+    el: "#vue_div",
+    data: {
+      howManyTimes: 3
+    }
+  })
+</script>
+
 {% endblock %}
