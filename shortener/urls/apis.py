@@ -42,7 +42,7 @@ class UrlListView(viewsets.ModelViewSet):
         return MsgOk()
     
     def list(self, request):
-        queryset = self.get_queryset().all()
+        queryset = self.get_queryset().filter(creator_id=request.user.id).all()
         serializer = UrlListSerializer(queryset, many = True)
         return Response(serializer.data)
     
